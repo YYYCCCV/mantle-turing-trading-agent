@@ -90,12 +90,67 @@ Every signal must pass:
 
 ## Mantle Integration Roadmap
 
-The MVP is intentionally local and deterministic. The Mantle integration path is:
+The MVP is intentionally local and deterministic. The integration path has two tracks: Mantle for on-chain verification and Bybit for live market data (when ready).
 
-1. Sign agent decisions with a Mantle wallet identity.
-2. Record decision hashes and trade summaries on Mantle.
-3. Build a verifiable performance history from audited runs.
-4. Expose agent reputation for strategy marketplaces or agent-to-agent coordination.
+### Mantle On-Chain Verification
+
+Each phase builds on the audit trail already in place:
+
+**Phase 1 — Identity (MVP-ready)**
+- Sign agent run summaries with a Mantle wallet.
+- Publish agent identity on Mantle so verifiers can confirm which agent produced which decisions.
+- No trading changes needed — just add a signature to the existing JSONL log.
+
+**Phase 2 — Anchoring (post-MVP)**
+- Hash each signal, risk decision, and trade record into a Merkle tree.
+- Post the Merkle root to Mantle at configurable intervals (every run, hourly, daily).
+- The on-chain root anchors the full off-chain audit trail — anyone with the log can verify it against the root.
+
+**Phase 3 — Reputation (post-MVP)**
+- Build a Mantle smart contract that tracks agent performance over time.
+- Metrics: Sharpe ratio, win rate, max drawdown, signal accuracy, risk compliance.
+- Reputation is non-transferable and cryptographically tied to the agent identity from Phase 1.
+
+**Phase 4 — Marketplace (vision)**
+- Agents with verified reputation can list strategies on Mantle.
+- Strategy composability: agents can consume each other's signals as inputs.
+- Decentralized signal marketplace with on-chain settlement and reputation slashing.
+
+### Bybit API Integration (Architecture Plan)
+
+The agent is designed with a clean seam for live data. No live trading until fully tested.
+
+```text
+                    +------------------+
+                    |   Bybit API v5   |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |  bybit_adapter.py |  <- NEW (not built yet)
+                    +--------+---------+
+                             |
+              +--------------+--------------+
+              |                             |
+     +--------v---------+         +---------v--------+
+     |  MarketData       |         |  Trade Execution  |
+     |  (live prices,    |         |  (Bybit order API) |
+     |   order book,     |         |                    |
+     |   funding rate)   |         |  DRY_RUN guard     |
+     +------------------+         +-------------------+
+```
+
+**What changes:**
+1. New `data/bybit_adapter.py` — fetches live OHLCV, funding rates, and order book data from Bybit API v5.
+2. New `execution/bybit_trader.py` — places real orders only when `DRY_RUN=false`.
+3. `config.py` gets `BYBIT_API_KEY` and `BYBIT_API_SECRET` env vars.
+
+**What does NOT change:**
+- Signal generators stay pure functions (MarketData in, Signal out).
+- Risk policy stays identical (it operates on Signal, not on data source).
+- Audit logger stays identical.
+- The mock data path remains the default for testing and demo.
+
+**Safety guard:** Live trading requires an explicit `DRY_RUN=false` environment variable. Without it, all execution paths default to paper trading — even if Bybit API keys are present.
 
 ## Why It Fits The Hackathon
 
