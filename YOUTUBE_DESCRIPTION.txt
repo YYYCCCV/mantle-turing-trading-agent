@@ -28,7 +28,7 @@ Phase 3 — Reputation (on-chain performance tracking)
 Phase 4 — Marketplace (decentralized strategy composability)
 
 Source Code: https://github.com/YYYCCCV/mantle-turing-trading-agent
-DoraHacks: [TBD]
+DoraHacks: https://dorahacks.io/hackathon/mantle-turing-test
 
 Timestamps:
 0:00 — Hook & Problem

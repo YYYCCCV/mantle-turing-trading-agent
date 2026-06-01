@@ -60,7 +60,7 @@ https://github.com/YYYCCCV/mantle-turing-trading-agent
 
 ## Demo Video URL
 
-[TBD — upload to YouTube and paste URL here]
+https://youtu.be/zVGyWGUOab4
 
 ## Documentation / Setup Instructions
 
