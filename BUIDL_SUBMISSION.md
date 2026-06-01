@@ -1,85 +1,132 @@
-# Mantle Alpha Trading Agent — BUIDL Submission
+# BUIDL Submission — DoraHacks
 
-**Mantle Turing Test Hackathon 2026**
+> Copy-paste ready for the DoraHacks BUIDL form.
 
-## Project
+---
 
-| Field | Value |
-|-------|-------|
-| **Name** | Mantle Alpha Trading Agent |
-| **Primary Track** | AI Trading Strategy |
-| **Backup Track** | AI Alpha Data |
-| **Repo** | https://github.com/YYYCCCV/mantle-turing-trading-agent |
-| **Stack** | Python 3.10+, pytest, zero external API dependencies for demo |
+## Project Name
 
-## One-Liner
+**Mantle Alpha Trading Agent**
 
-An explainable AI trading agent that generates crypto alpha signals from deterministic strategies, applies conservative risk controls, and records every decision for future on-chain verification on Mantle.
+## Tagline / Short Description
 
-## The Problem
+An explainable AI trading agent that generates crypto alpha signals from deterministic strategies, applies conservative risk controls, and records every decision — built for auditability and future on-chain verification on Mantle.
 
-Most "AI trading agents" fall into two camps:
-1. **Black-box chatbots** that claim AI makes trade decisions, with no way to verify, audit, or reproduce results.
-2. **Unverified signal scripts** that post trade ideas with no risk management, no execution trail, and no accountability.
+## Project Description
 
-Neither is suitable for Mantle's vision of verifiable on-chain agents.
+A runnable, testable, paper-trading agent that demonstrates the full trading-agent loop without black-box AI decision-making.
 
-## Our Approach
+**Three Signal Strategies:**
 
-We built a **small, complete, auditable trading-agent harness** where:
-- The strategy layer is **deterministic** — same inputs always produce the same outputs.
-- The AI layer can **explain** decisions without secretly making trades.
-- Every decision is **logged** in JSONL format for future Mantle anchoring.
-- The agent runs **paper-trading only** by default — safe to demo, safe to iterate.
+1. **Momentum** — SMA(10) vs SMA(30) crossover with volume expansion confirmation. BUY on bullish crossover, SELL on bearish crossover.
+
+2. **Mean Reversion** — Bollinger Band (20, 2σ) deviation. BUY near lower band (oversold), SELL near upper band (overbought).
+
+3. **Volatility Breakout** — Realized volatility > 80% annualized with volume > 1.2x average. Follows short-term trend direction.
+
+**Conservative Risk Layer (6 Checks):**
+
+Every signal must pass: minimum edge threshold, minimum confidence threshold, maximum trade amount, maximum exposure per symbol, quarter-Kelly position sizing, and dry-run-only execution.
+
+**Full Audit Trail:**
+
+JSONL audit logs record every signal generated, every risk decision (approved or rejected with rationale), and every trade executed. The log is machine-readable and ready for Mantle on-chain anchoring.
+
+**Architecture:**
 
 ```text
 mock market data -> signal engine -> risk policy -> dry-run trader -> audit log -> dashboard
 ```
 
-## What It Does
+All strategy modules are pure functions with zero external dependencies — fully reusable across data sources and trading platforms.
 
-### Signals (3 strategies)
+## How It Works
 
-| Signal | Logic | Direction |
-|--------|-------|-----------|
-| **Momentum** | SMA(10) vs SMA(30) crossover + volume expansion | BUY if short > long, SELL if short < long |
-| **Mean Reversion** | Price deviation from Bollinger Bands (20, 2σ) | BUY near lower band, SELL near upper band |
-| **Volatility Breakout** | Realized vol > 80% annualized + volume > 1.2x average | Follows short-term SMA trend |
+1. **Data**: Deterministic mock market data for BTC-USD, ETH-USD, SOL-USD. Generates 60-bar OHLCV series with computed SMA, Bollinger Bands, volume profile, and annualized volatility. No network required for demo.
 
-### Risk Policy (6 checks)
+2. **Signal Generation**: Three independent signal generators run on each symbol. Each signal is a pure function — same input always produces the same output. Signals include edge (statistical alpha), confidence, and a human-readable reason string.
 
-1. Minimum edge threshold (default: 0.02)
-2. Minimum confidence threshold (default: 0.30)
-3. Maximum trade amount (default: $1,000)
-4. Maximum exposure per symbol (default: $5,000)
-5. Kelly-style conservative sizing (quarter-Kelly)
-6. Dry-run-only execution (no real funds)
+3. **Risk Evaluation**: Quarter-Kelly formula: `position = max_trade × edge × kelly_fraction × confidence`. Enforces per-symbol exposure caps. Rejected signals are logged with rejection reasons.
 
-### Audit Trail
+4. **Execution**: Dry-run paper trading only by default. `DRY_RUN=false` must be explicitly set to enable live execution — even with API keys present.
 
-Every run produces a JSONL audit log with:
-- Run metadata (timestamp, symbols scanned, counts)
-- Every signal generated (type, direction, edge, confidence, reason)
-- Every risk decision (approved/rejected, adjusted amount, rationale)
-- Every trade executed (status, amount, price, details)
+5. **Audit Logging**: JSONL format. Each run appends a run_start entry, all signal entries, all trade entries. Timestamped and machine-readable.
 
-## Demo
+6. **Dashboard**: ASCII-safe terminal output showing run summary, signals with edge/confidence, trades with amounts, risk rejections, audit log path, and Mantle on-chain roadmap.
+
+## Source Code URL
+
+https://github.com/YYYCCCV/mantle-turing-trading-agent
+
+## Demo Video URL
+
+[TBD — upload to YouTube and paste URL here]
+
+## Documentation / Setup Instructions
 
 ```bash
-# Install
+git clone https://github.com/YYYCCCV/mantle-turing-trading-agent.git
+cd mantle-turing-trading-agent
 pip install -e ".[dev]"
 
-# Run the full demo (no network, no API keys, no real funds)
+# Run all tests (37/37)
+pytest -v
+
+# Run demo (no network, no API keys, no real funds)
 python -m mantle_agent --demo
 
-# Run 37 tests
-pytest -v
+# Custom risk parameters
+python -m mantle_agent --demo --max-trade 500 --min-edge 0.03
+
+# Coverage report
+pytest --cov=mantle_agent --cov-report=term-missing
 ```
 
-### Demo Output
+**Environment variables:**
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| DRY_RUN | true | Dry-run mode (no real money) |
+| MAX_TRADE_AMOUNT | 1000 | Max USD per trade |
+| MIN_EDGE_THRESHOLD | 0.02 | Minimum edge to trigger |
+| MIN_CONFIDENCE_THRESHOLD | 0.30 | Minimum confidence to execute |
+| MAX_EXPOSURE_PER_SYMBOL | 5000 | Max exposure per symbol |
+| KELLY_FRACTION | 0.25 | Kelly fraction (0.25 = quarter-Kelly) |
+
+## Technologies Used
+
+- **Python 3.10+** — Full type annotations, immutable dataclasses
+- **pytest** — 37 tests across 3 test files, all passing
+- **Deterministic Mock Data** — Sine-trend model with fixed seed, no network required
+- **Quarter-Kelly Criterion** — Conservative position sizing
+- **JSONL Audit Logs** — Machine-readable, append-only decision trail
+- **Pure Function Architecture** — All strategy modules: MarketData → Signal, zero side effects
+
+## Hackathon Tracks / Themes Covered
+
+- **AI Trading Strategy** (primary) — Complete trading agent with explainable signal generation and risk management
+- **AI Alpha Data** (backup) — Signal engine produces structured alpha data with edge, confidence, and rationale
+- **On-Chain Verification** — JSONL audit trail designed for Mantle anchoring (identity → hashing → reputation → marketplace)
+- **Safe by Default** — Dry-run only. Real execution requires explicit opt-in. No real funds at risk.
+
+## What Makes It Different
+
+- **Not a chatbot**: The AI layer explains decisions — it doesn't secretly make them. Every signal is a deterministic pure function.
+- **Reproducible**: Same mock data, same seed, same output — every time. Judges can clone and verify.
+- **Auditable**: JSONL logs capture every decision. Ready to hash and anchor on Mantle for immutable verification.
+- **Zero network dependency**: Demo runs fully offline. No API keys, no VPN, no real funds.
+- **Architecture designed for migration**: Core strategy modules (signals.py, risk.py, engine.py) accept generic MarketData and output generic Signals — swap the data source without touching the logic.
+- **37/37 tests passing**: Signals, risk, engine, end-to-end pipeline — all covered.
+
+## Automation Logs
+
+Sample execution from `python -m mantle_agent --demo`:
 
 ```text
 [Mantle Agent] Mode: DRY RUN
+[Mantle Agent] Max trade: $1000 | Min edge: 0.02 | Min confidence: 0.3
+[Mantle Agent] Kelly fraction: 0.25
+
 [Mantle Agent] Generating mock market data for 3 symbols...
   BTC-USD: price=$99709.86, SMA10=100935.06, SMA30=99641.02
   ETH-USD: price=$3014.03, SMA10=3117.08, SMA30=3120.54
@@ -93,59 +140,56 @@ pytest -v
 
 [Mantle Agent] Executing trades (DRY RUN)...
 [Mantle Agent] Dry-run trades: 3, Rejected: 0
+
+============================================================
+  [M]  MANTLE ALPHA TRADING AGENT  [M]
+       Mantle Turing Test Hackathon -- MVP
+============================================================
+
+--------------------------------------------------------------
+  [*]  RUN SUMMARY
+--------------------------------------------------------------
+  Timestamp         : 2026-06-01 16:49:48
+  Symbols Scanned   : 3
+  Signals Generated : 3
+  Signals Rejected  : 0
+  Trades Executed   : 3
+--------------------------------------------------------------
+  [>>]  SIGNALS GENERATED
+--------------------------------------------------------------
+  [BUY] [mean_reversion      ] ETH-USD  BUY  | edge=0.6734 | conf=0.90 | price=$3014.03
+       |-- MeanReversion: price=3014.03 near lower band (16.3%)
+
+  [BUY] [mean_reversion      ] SOL-USD  BUY  | edge=0.6297 | conf=0.90 | price=$169.73
+       |-- MeanReversion: price=169.73 near lower band (18.5%)
+
+  [BUY] [mean_reversion      ] BTC-USD  BUY  | edge=0.3554 | conf=0.71 | price=$99709.86
+       |-- MeanReversion: price=99709.86 near lower band (32.2%)
+
+  [$]  TRADES (3)
+--------------------------------------------------------------
+  [DRY RUN]      BUY  $  151.51 @ $3014.03 on ETH-USD
+  [DRY RUN]      BUY  $  141.68 @ $169.73 on SOL-USD
+  [DRY RUN]      BUY  $   63.16 @ $99709.86 on BTC-USD
+
+--------------------------------------------------------------
+  [@]  Audit Log: .../logs/run_2026-06-01.jsonl
+--------------------------------------------------------------
+  [M]  Mantle On-Chain Roadmap:
+      1. Sign agent decisions with Mantle identity
+      2. Record trade hashes on Mantle for auditability
+      3. Build on-chain reputation from verified performance
+      4. Enable decentralized strategy marketplace
 ```
 
-## Test Coverage
+## Judge Cues
 
-37 tests across 3 files, all passing:
-
-| Test File | Tests | Coverage |
-|-----------|-------|----------|
-| `test_signals.py` | 11 | Momentum, mean reversion, volatility breakout, edge cases |
-| `test_risk.py` | 11 | Edge/confidence thresholds, exposure caps, Kelly sizing |
-| `test_engine.py` | 15 | Determinism, E2E pipeline, demo symbols, dry-run enforcement |
-
-## Architecture
-
-```text
-src/mantle_agent/
-|-- __init__.py
-|-- __main__.py            # python -m mantle_agent --demo
-|-- config.py              # Environment-based configuration
-|-- types.py               # 11 immutable dataclasses
-|-- data/
-|   |-- mock_market.py     # Deterministic mock data (BTC/ETH/SOL)
-|-- strategy/
-|   |-- engine.py          # Strategy orchestrator
-|   |-- signals.py         # 3 signal generators
-|   |-- risk.py            # Risk evaluator (Kelly sizing)
-|-- execution/
-|   |-- trader.py          # Dry-run paper trading
-|-- reporting/
-|   |-- dashboard.py       # ASCII-safe terminal dashboard
-|   |-- logger.py          # JSONL audit logger
-```
-
-## Mantle Integration Path
-
-The MVP is intentionally local-first. The Mantle integration path:
-
-1. **Identity**: Sign agent decisions with a Mantle wallet — proving which agent made which call.
-2. **Verification**: Record decision hashes on Mantle for immutable audit trail.
-3. **Reputation**: Build on-chain reputation from verified, time-stamped performance records.
-4. **Marketplace**: Enable decentralized strategy composability — agents that can coordinate, compete, or compose.
-
-## Key Differentiator
-
-Not "AI makes the trades." **Every trade is deterministic, explainable, and auditable.** The AI layer can explain *why* a signal fired, but the signal itself is a pure function — reproducible by anyone running the same code.
-
-## What We Did NOT Build (On Purpose)
-
-- No live trading or real funds
-- No Bybit API integration (MVP is fully offline)
-- No frontend (terminal dashboard for demo)
-- No LLM in the trading decision path (explainability layer only)
-- No black-box AI decision-making
+- Code is clean, well-typed, and fully tested (37/37 passing)
+- Architecture designed for Mantle integration: audit trail ready for on-chain anchoring
+- Built with real-world constraints in mind (deterministic, reproducible, Windows GBK terminal compatible)
+- Risk management is serious: quarter-Kelly + exposure caps + edge/confidence thresholds + dry-run default
+- Not a black-box chatbot: AI explains, pure functions decide
+- Zero network dependency: clone, install, run — that's it
 
 ## Team
 

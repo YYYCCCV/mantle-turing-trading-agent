@@ -1,0 +1,9 @@
+This 3-minute demo walks through the Mantle Alpha Trading Agent — an explainable AI trading agent built for the Mantle Turing Test Hackathon:
+
+0:00-0:25 — Hook: black-box trading bots vs explainable, auditable agents
+0:25-0:50 — Architecture: mock data -> signal engine -> risk policy -> dry-run trader -> audit log -> dashboard
+0:50-1:10 — Test suite: 37/37 pytest passing (signals, risk, engine, E2E pipeline)
+1:10-1:40 — Code walkthrough: immutable dataclasses, pure function signals, quarter-Kelly risk sizing, dry-run only execution
+1:40-2:20 — Live demo: python -m mantle_agent --demo, 3 symbols scanned, 3 signals generated, 3 paper trades executed with conservative sizing
+2:20-2:50 — Audit log (JSONL) and Mantle on-chain roadmap: identity, anchoring, reputation, marketplace
+2:50-3:00 — Summary and GitHub link

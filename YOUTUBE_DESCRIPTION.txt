@@ -1,0 +1,42 @@
+An explainable AI trading agent that generates crypto alpha signals, applies conservative risk controls, and records every decision for on-chain verification. Built for the Mantle Turing Test Hackathon on DoraHacks.
+
+Three signal strategies:
+- Momentum — SMA crossover with volume expansion
+- Mean Reversion — Bollinger Band deviation
+- Volatility Breakout — vol expansion with volume confirmation
+
+Risk Management:
+- Minimum edge and confidence thresholds
+- Kelly-style conservative position sizing (quarter-Kelly)
+- Per-symbol exposure caps
+- Dry-run only by default (no real funds at risk)
+
+Features:
+- Deterministic mock market data (BTC/ETH/SOL) — runs fully offline
+- JSONL audit logs with full decision trail
+- 37/37 pytest suite passing
+- Pure function architecture — all strategy modules are chain-agnostic
+- ASCII terminal dashboard for demo
+
+Architecture:
+mock market data -> signal engine -> risk policy -> dry-run trader -> audit log -> dashboard
+
+Mantle Integration Roadmap:
+Phase 1 — Agent Identity (sign decisions with Mantle wallet)
+Phase 2 — Anchoring (Merkle root of decisions on-chain)
+Phase 3 — Reputation (on-chain performance tracking)
+Phase 4 — Marketplace (decentralized strategy composability)
+
+Source Code: https://github.com/YYYCCCV/mantle-turing-trading-agent
+DoraHacks: [TBD]
+
+Timestamps:
+0:00 — Hook & Problem
+0:25 — Architecture Overview
+0:50 — Test Suite (37/37)
+1:10 — Code Walkthrough (signals, risk, trader)
+1:40 — Live Demo (python -m mantle_agent --demo)
+2:20 — Audit Log & Mantle Roadmap
+2:50 — Summary & GitHub
+
+#Mantle #TradingAgent #DoraHacks #Python #Crypto #OnChain #AI

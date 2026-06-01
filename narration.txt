@@ -1,0 +1,13 @@
+Most AI trading agents are black boxes. You can't verify their decisions, you can't audit their trades, and you definitely can't reproduce their results. For the Mantle Turing Test Hackathon, I built something different.
+
+Mantle Alpha Trading Agent is an explainable trading harness. The architecture is straightforward: mock market data feeds into a deterministic signal engine. Signals go through a conservative risk policy. Trades execute in dry-run mode only — no real funds, no API keys needed. Every decision is logged. Every run is reproducible.
+
+Let me show you the test coverage first. Thirty-seven tests across three test files, all passing. Signal generation, risk evaluation, and end-to-end pipeline — every module is covered. Every strategy is a pure function, so the same input always produces the same output. No randomness. No hidden state.
+
+Now let me walk through the code. Types are immutable dataclasses — frozen, no mutation allowed. The signal generators are pure functions that take a MarketData snapshot and return an optional Signal with edge, confidence, and a human-readable reason. The risk module chains six checks: edge threshold, confidence threshold, max trade amount, per-symbol exposure cap, quarter-Kelly position sizing, and dry-run enforcement. The trader executes paper trades only — it records everything but places zero real orders.
+
+Let me run the full demo. It generates deterministic mock market data for BTC, ETH, and SOL — no network required. The strategy engine fires three mean reversion signals. The risk policy approves all three. Three paper trades execute with conservative sizing — see the amounts: one hundred fifty-one dollars for ETH, one hundred forty-two for SOL, and just sixty-three dollars for BTC from a one-thousand-dollar max. That's quarter-Kelly at work — the higher-priced asset gets the smallest position because edge scales with price.
+
+Every run writes a JSONL audit log. Signals, risk decisions, trades — all timestamped and machine-readable. This is the foundation for Mantle integration. Phase one: sign agent decisions with a Mantle wallet identity. Phase two: hash decision records into a Merkle tree and post the root on-chain. Phase three: build reputation from verified, immutable performance history. Phase four: enable a decentralized strategy marketplace where agents compose and compete, all verified on Mantle.
+
+To summarize: three signal strategies, six risk checks, deterministic pure-function architecture, zero network dependency, thirty-seven passing tests, and an audit trail ready for on-chain anchoring. Source code is on GitHub. Mantle Alpha Trading Agent — deterministic, auditable, ready for verification. Thank you.
